@@ -10,11 +10,12 @@ class Lattice {
     int dim;
     int xLen, yLen, zLen;
     Site *lat;
+    int volume;
 
     Lattice(int, int, int);      //Default constructor
 
     double  configurationEnergy(int);
-    void    sweep(void);
+    void    monteCarloSweep(int, double);
 
         //Helpers
     int *getNeighbors(int, int, int);

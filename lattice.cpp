@@ -15,7 +15,7 @@
  *
  * Lattice()
  *      Default constructor
- * Lattice(dim, xLen, yLen, zLen, periodicBound, name)
+ * Lattice(xLen, yLen, zLen)
  *      Full constructor
  * ......
  */
@@ -35,11 +35,12 @@ Lattice::Lattice(int x, int y, int z){
     xLen = x;
     yLen = y;
     zLen = z;
-    lat = (Site *)malloc(sizeof(Site) * xLen * yLen * zLen);
-    int sum = 0; //debug
-    for (int i = 0; i < xLen; ++i){
+    volume = xLen * yLen * zLen;
+    lat = (Site *)malloc(sizeof(Site) * volume);
+
+    for (int k = 0; k < zLen; ++k){
       for (int j = 0; j < yLen; ++j){
-        for (int k = 0; k < zLen; ++k){
+        for (int i = 0; i < xLen; ++i){
           // Get a random spin, init site and insert it into the mapped lattice.
           int m = map(i, j, k);
           double num = prng.randDblExc();
@@ -48,11 +49,11 @@ Lattice::Lattice(int x, int y, int z){
           int *neighbors = getNeighbors(i, j, k);
           Site s(neighbors, spin);
           lat[m] = s;
-          sum += lat[m].spin;
         }
       }
     }
-    cout << "SUM: " << sum  << " percent off even: " << 100.0 * sum / (xLen * yLen *zLen) << endl;
+
+
 }
 
 int* Lattice::getNeighbors(int i, int j, int k){
@@ -70,7 +71,25 @@ int* Lattice::getNeighbors(int i, int j, int k){
 }
 
 inline int Lattice::map(int i, int j, int k){
-  return i * j * k + j * k + k;
+  if (i < 0){
+      i = xLen - 1;
+  }
+  if (j < 0){
+      j = yLen - 1;
+  }
+  if (k < 0){
+      k = zLen - 1;
+  }
+  if (i > xLen - 1){
+      i = 0;
+  }
+  if (j > yLen - 1){
+      j = 0;
+  }
+  if (k > zLen - 1){
+      k = 0;
+  }
+  return xLen * yLen * k + xLen * j + i;
 }
 
 double Lattice::configurationEnergy(int m){
@@ -85,7 +104,33 @@ double Lattice::configurationEnergy(int m){
     return isingStrength * energy;
 }
 
-void Lattice::sweep(void){
-  // randomly pick xLen * yLen *zLen sites and determine wheather to flip them
+void Lattice::monteCarloSweep(int iterations, double temperature){
+  int randIndex;
+  double randNum;
+  double transitionProbability, initEnergy, flipEnergy, energyDiff;
+
+  // randomly pick iterations number of sites sites and determine wheather to flip them
   // based on their boltzmann factor.
+  for (int i = 0; i <= iterations; ++i){
+    randIndex = (int)prng.randInt(volume);
+    initEnergy = configurationEnergy(randIndex);
+    //Flip site and take energy difference
+    lat[randIndex].spin *= -1;
+    flipEnergy = configurationEnergy(randIndex);
+
+    energyDiff = initEnergy - flipEnergy;
+
+    if (energyDiff < 0){
+      continue;
+    } else {
+      randNum = prng.randDblExc();
+      transitionProbability = exp(-energyDiff / temperature);
+
+      if (randNum < transitionProbability){
+        continue;
+      } else {
+        lat[randIndex].spin *= -1;
+      }
+    }
+  }
 }
