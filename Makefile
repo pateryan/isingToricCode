@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -Werror -O3 -Wno-unused-variable -std=c++11
-OBJECTS = test.o site.o lattice.o
+OBJECTS = test.o site.o lattice.o datautils.o
 
 SOURCEDIR = src
 BUILDDIR = build
@@ -20,6 +20,8 @@ site.o : site.cpp site.h
 	g++ -c $(CFLAGS) site.cpp
 lattice.o : lattice.cpp lattice.h
 	g++ -c $(CFLAGS) lattice.cpp
+datautils.o : datautils.cpp lattice.h datautils.h
+	g++ -c $(CFLAGS) datautils.cpp
 
 clean :
 	rm *.o

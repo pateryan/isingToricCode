@@ -6,21 +6,25 @@
 class Lattice {
 
   public:
-    double isingStrength = 1.0;    //write a function to change this soon....
+    double isingStrength = -1.0;    //write a function to change this soon....
     int dim;
-    int xLen, yLen, zLen;
+    int latticeSize;
     Site *lat;
     int volume;
 
-    Lattice(int, int, int);      //Default constructor
+    Lattice(int);      //Default constructor
 
-    double  configurationEnergy(int);
-    void    monteCarloSweep(int, double);
+    double  configurationEnergy(int, int);
+    double  totalMagnetization(void);
+    void    warmupSweep(int, double);
+    void    randomMcIteration(double);
+    void    linearMcIteration(double);
+    double  twoDConfigurationEnergy(int);
+
 
         //Helpers
     int *getNeighbors(int, int, int);
-    inline int map(int, int, int);
+    inline int mapToArray(int, int, int);
 };
-
 
 #endif /* LATTICE_h */
